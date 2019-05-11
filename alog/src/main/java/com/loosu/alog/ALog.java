@@ -6,16 +6,21 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 
+import com.loosu.alog.cache.DefaultCache;
+
 import java.util.Objects;
 
 /**
- * log 工具类，为了保证调用栈的深度该类使用Java代码编写(Kotlin 静态方法 在Java调用与在Kotlin调用时栈的深度是不一样的)
+ * A {@link Log} that can print more info.
  */
 public final class ALog {
     private static final String TAG = "ALog";
 
     private static String sLogDef = TAG;   // 默认 tag
     private static String sMsgDef = "";
+
+    // cache strategy for log
+    public static CacheStrategy sCache = new DefaultCache();
 
 
     private ALog() {
