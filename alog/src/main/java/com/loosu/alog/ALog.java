@@ -139,6 +139,10 @@ public final class ALog {
         Utils.Companion.requireNonNull(level, "level is null");
 
         Object[] logs = sLogs.toArray();
+        if (logs==null) {
+            return;
+        }
+
         for (Object log : logs) {
             ((LogPrinter) log).printLog(level, tagObj, msgObj, throwable);
         }
