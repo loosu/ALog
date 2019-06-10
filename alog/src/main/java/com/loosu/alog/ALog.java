@@ -1,27 +1,26 @@
 package com.loosu.alog;
 
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.loosu.alog.printer.LogcatPrinter;
 
-import com.loosu.alog.cache.DefaultCache;
-
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A {@link Log} that can print more info.
  */
 public final class ALog {
-    private static final String TAG = "ALog";
 
-    private static String sLogDef = TAG;   // 默认 tag
-    private static String sMsgDef = "";
+    private static List<LogPrinter> sLogs = new ArrayList<>();
 
-    // cache strategy for log
-    public static CacheStrategy sCache = new DefaultCache();
-
+    static {
+        sLogs.add(new LogcatPrinter());
+    }
 
     private ALog() {
         // util class no instance.
@@ -137,47 +136,11 @@ public final class ALog {
      * @param throwable throwable 信息
      */
     private static void printLog(@NonNull Level level, @Nullable Object tagObj, @Nullable Object msgObj, @Nullable Throwable throwable) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Objects.requireNonNull(level, "level is null");
-        }
+        Utils.Companion.requireNonNull(level, "level is null");
 
-        // info about trace
-        final StackTraceElement traceElement = Thread.currentThread().getStackTrace()[4];
-        final String methodName = traceElement.getMethodName();
-        final String fileName = traceElement.getFileName();
-        final int lineNumber = traceElement.getLineNumber();
-
-        // tag
-        final String tag = tagObj == null ? sLogDef : tagObj.toString();
-
-        // msg
-        final String msg = new StringBuilder().append('(').append(fileName).append(':')
-                .append(lineNumber).append(')')
-                .append(methodName).append(" : ")
-                .append(msgObj == null ? sMsgDef : msgObj.toString())
-                .toString();
-
-        switch (level) {
-            case V:
-                Log.v(tag, msg, throwable);
-                break;
-            case D:
-                Log.d(tag, msg, throwable);
-                break;
-            case I:
-                Log.i(tag, msg, throwable);
-                break;
-            case W:
-                Log.w(tag, msg, throwable);
-                break;
-            case E:
-                Log.e(tag, msg, throwable);
-                break;
-            case WTF:
-                Log.wtf(tag, msg, throwable);
-                break;
-            default:
-                throw new IllegalArgumentException("no such level: " + level);
+        Object[] logs = sLogs.toArray();
+        for (Object log : logs) {
+            ((LogPrinter) log).printLog(level, tagObj, msgObj, throwable);
         }
     }
 }

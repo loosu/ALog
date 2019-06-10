@@ -1,9 +1,8 @@
-package com.loosu.alog.cache
+package com.loosu.alog.printer
 
-import android.text.TextUtils
 import com.loosu.alog.Level
-import com.loosu.alog.CacheStrategy
-import com.loosu.alog.Util
+import com.loosu.alog.LogPrinter
+import com.loosu.alog.Utils
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -16,21 +15,16 @@ import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 
-abstract class DiskCache(logDirPath: String) : CacheStrategy() {
-    private val TAG = "TAG"
+class FilePrinter(logDirPath: String) : LogPrinter() {
 
-    private val DATA_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS", Locale.US)
-    private val mCaches: ArrayList<String> = ArrayList()
     private val mLogDirPath: String = logDirPath
 
-    override fun needSave(level: Level): Boolean {
-        return when (level) {
-            Level.D, Level.I, Level.W, Level.E -> true
-            else -> false
-        }
-    }
+    private val mLogDef = "TAG"   // 默认 tag
+    private val mMsgDef = ""
 
-    override fun onSave(level: Level, tagObj: Any?, msgObj: Any?, throwable: Throwable?) {
+    private val DATA_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS", Locale.US)
+
+    override fun println(level: Level, tagObj: Any?, msgObj: Any?, throwable: Throwable?) {
 
         // info about trace
         val traceElement = Thread.currentThread().stackTrace[4]
@@ -39,7 +33,7 @@ abstract class DiskCache(logDirPath: String) : CacheStrategy() {
         val lineNumber = traceElement.lineNumber
 
         // tag str
-        val tag = tagObj ?: TAG
+        val tag = tagObj ?: mLogDef
 
         // msg str
         val msg = StringBuilder().append('(').append(fileName).append(':')
@@ -48,24 +42,8 @@ abstract class DiskCache(logDirPath: String) : CacheStrategy() {
                 .append(msgObj ?: "")
                 .toString()
 
-        // throwable str
-        val exception = getTraceStr(throwable) ?: ""
 
-        val cache = "${DATA_FORMAT.format(System.currentTimeMillis())} $level $tag $msg $exception"
-        mCaches.add(cache)    // string format: "1990-01-01 00:00:00:00 D msgObj"
-
-        if (startSaveCache(mCaches.size)) {
-            val temp = ArrayList<String>()
-            temp.addAll(mCaches)
-            mCaches.clear()
-            realSave(temp)
-        }
     }
-
-    /**
-     * start to save memory log
-     */
-    abstract fun startSaveCache(cacheSize: Int): Boolean
 
     private fun realSave(logs: List<String>) {
         Observable.create<String> { emitter ->
@@ -93,8 +71,8 @@ abstract class DiskCache(logDirPath: String) : CacheStrategy() {
                         } catch (e: Exception) {
                             //e.printStackTrace()
                             d.dispose()
-                            Util.close(bos)
-                            Util.close(fos)
+                            Utils.close(bos)
+                            Utils.close(fos)
                         }
                     }
 
@@ -104,23 +82,14 @@ abstract class DiskCache(logDirPath: String) : CacheStrategy() {
 
                     override fun onComplete() {
                         bos!!.flush()
-                        Util.close(bos)
-                        Util.close(fos)
+                        Utils.close(bos)
+                        Utils.close(fos)
                     }
 
                     override fun onError(e: Throwable) {
-                        Util.close(bos)
-                        Util.close(fos)
+                        Utils.close(bos)
+                        Utils.close(fos)
                     }
                 })
-    }
-
-    private fun getTraceStr(throwable: Throwable?): String? {
-        val traceStr = Util.getTraceStr(throwable)
-        return if (TextUtils.isEmpty(traceStr)) {
-            null
-        } else {
-            "\n\t$traceStr"
-        }
     }
 }
