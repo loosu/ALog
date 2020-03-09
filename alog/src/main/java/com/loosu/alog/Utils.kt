@@ -20,10 +20,16 @@ class Utils private constructor() {
             return obj
         }
 
+        /**
+         * 获取异常信息
+         */
         fun getStackTraceString(tr: Throwable?): String {
             return Log.getStackTraceString(tr)
         }
 
+        /**
+         * 关闭流
+         */
         fun close(closeable: Closeable?) {
             try {
                 closeable?.close()

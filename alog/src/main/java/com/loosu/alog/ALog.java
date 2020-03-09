@@ -138,13 +138,13 @@ public final class ALog {
     private static void printLog(@NonNull Level level, @Nullable Object tagObj, @Nullable Object msgObj, @Nullable Throwable throwable) {
         Utils.Companion.requireNonNull(level, "level is null");
 
-        Object[] logs = sLogs.toArray();
-        if (logs==null) {
+        LogPrinter[] logs = sLogs.toArray(new LogPrinter[0]);
+        if (logs == null) {
             return;
         }
 
-        for (Object log : logs) {
-            ((LogPrinter) log).printLog(level, tagObj, msgObj, throwable);
+        for (LogPrinter log : logs) {
+            log.printLog(level, tagObj, msgObj, throwable);
         }
     }
 }
