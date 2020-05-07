@@ -5,7 +5,7 @@ import java.io.Closeable
 import java.io.IOException
 
 
-class Utils private constructor() {
+internal class Utils private constructor() {
 
     companion object {
         /**
@@ -23,7 +23,7 @@ class Utils private constructor() {
         /**
          * 获取异常信息
          */
-        fun getStackTraceString(tr: Throwable?): String {
+        fun getStackTraceString(tr: Throwable?): String? {
             return Log.getStackTraceString(tr)
         }
 

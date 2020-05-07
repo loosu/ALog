@@ -8,7 +8,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.loosu.alog"
-        minSdkVersion 15
+        minSdkVersion 14
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
